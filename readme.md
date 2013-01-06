@@ -14,14 +14,14 @@ Based off of HTTP-Request library [http-request](https://github.com/kevinsawicki
 2. Add HttpRequestPlugin and HttpRequest java classes to your project
 
 3. Add the plugin to your cordova config.xml
-<pre>
+
 
     <plugins>
         <plugin
             name="HttpRequest"
             value="com.phonegap.plugins.http.HttpRequestPlugin" />
      </plugins>
-</pre>
+
 
 ## Using the plugin ##
 
