@@ -15,13 +15,13 @@ Based off of HTTP-Request library [http-request](https://github.com/kevinsawicki
 
 3. Add the plugin to your cordova config.xml
 
-
+```xml
     <plugins>
         <plugin
             name="HttpRequest"
             value="com.phonegap.plugins.http.HttpRequestPlugin" />
      </plugins>
-
+```
 
 ## Using the plugin ##
 
