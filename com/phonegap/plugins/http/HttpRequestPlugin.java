@@ -19,8 +19,6 @@ public class HttpRequestPlugin extends CordovaPlugin {
 
 	private final String TAG = "HTTP";
 
-	private HttpRequest request;
-
 	@Override
 	public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) {
 
@@ -31,42 +29,68 @@ public class HttpRequestPlugin extends CordovaPlugin {
 				public void run() {
 					try {
 
+						HttpRequest request;
+
 						String url = args.getString(0);
 						String method = args.getString(1);
 
 						JSONObject params = args.getJSONObject(2);
 						JSONObject options = args.getJSONObject(3);
 
-						if (method.equals("post")) {
-							setPostUrl(url);
-						}
-						else if (method.equals("get")) {
-							setGetUrl(url, params);
+						// optional params
+						boolean trust = options.getBoolean("trustAll");
+						boolean gzip = options.getBoolean("acceptGzip");
+
+
+						// iterate over the supplied params, depending on
+						// request method params are either directly attached to
+						// url(GET) or as a form(POST)
+
+						Map<String, String> inputParams = new HashMap<String, String>();
+
+						@SuppressWarnings("unchecked")
+						Iterator<String> keys = params.keys();
+
+						while (keys.hasNext()) {
+
+							// get the key and corresponding value
+							String keyName = (String) keys.next();
+							String keyValue = params.getString(keyName);
+
+							inputParams.put(keyName, keyValue);
+
 						}
 
-						if (options.getBoolean("acceptGzip") == true) {
-							acceptGzip();
+						if (method.equalsIgnoreCase("post")) {
+							request = HttpRequest.post(url);
+							request.form(inputParams);
 						}
-						if (params.length() > 0 && method.equals("post")) {
-							setPostParams(params);
+						else {
+							request = HttpRequest.get(url, inputParams, true);
 						}
-						if (options.getBoolean("trustAll") == true) {
-							acceptAll();
+						
+						//do we want to automatically trust all ssl connections
+						if (trust == true) {
+							request.trustAllCerts();
+							request.trustAllHosts();
+						}
+						// Tell server to gzip response and automatically uncompress
+						if (gzip == true) {
+							
+							request.acceptGzipEncoding().uncompress(true);
 						}
 
-						int code = getCode();
-						String body = getBody();
-						String msg = getMessage();
-						disconnect();
+						int code = request.code();
+						String body = request.body();
+						String msg = request.message();
 
 						JSONObject response = new JSONObject();
-						
+
 						response.put("code", code);
 						response.put("body", body);
 						response.put("message", msg);
-						
 
-//						Log.d(TAG, "Response from " + url + " " + code);
+//						Log.d(TAG, "Response code " + url + " " + code);
 //						Log.d(TAG, "Response body " + url + " " + body);
 
 						if (code == 200) {
@@ -86,6 +110,7 @@ public class HttpRequestPlugin extends CordovaPlugin {
 						Log.e(TAG, ex.getMessage());
 					}
 					catch (Exception ex) {
+						Log.e(TAG, ex.getStackTrace().toString());
 						Log.e(TAG, ex.getMessage());
 					}
 
@@ -95,84 +120,6 @@ public class HttpRequestPlugin extends CordovaPlugin {
 		}
 		return false;
 
-	}
-
-	public void disconnect(){
-		request.disconnect();
-	}
-	public void setPostUrl(String url) throws HttpRequestException {
-		request = HttpRequest.post(url);
-		return;
-	}
-
-	public void setGetUrl(String url, JSONObject params) throws HttpRequestException, JSONException {
-
-		Map<String, String> inputParams = new HashMap<String, String>();
-
-		if (params.length() > 0) {
-
-			@SuppressWarnings("unchecked")
-			Iterator<String> keys = params.keys();
-
-			while (keys.hasNext()) {
-
-				// get the key and corresponding value
-				String keyName = (String) keys.next();
-				String keyValue = params.getString(keyName);
-
-				inputParams.put(keyName, keyValue);
-
-			}
-		}
-
-		request = HttpRequest.get(url, inputParams, true);
-		return;
-	}
-
-	public void setPostParams(JSONObject params) throws JSONException, HttpRequestException {
-
-		Map<String, String> inputParams = new HashMap<String, String>();
-
-		@SuppressWarnings("unchecked")
-		Iterator<String> keys = params.keys();
-
-		while (keys.hasNext()) {
-
-			// get the key and corresponding value
-			String keyName = (String) keys.next();
-			String keyValue = params.getString(keyName);
-
-			inputParams.put(keyName, keyValue);
-
-		}
-		request.form(inputParams);
-		return;
-	}
-
-	public void acceptAll() throws HttpRequestException {
-		// Accept all certificates
-		request.trustAllCerts();
-		// Accept all hostnames
-		request.trustAllHosts();
-		return;
-	}
-
-	public void acceptGzip() {
-		// Tell server to gzip response and automatically uncompress
-		request.acceptGzipEncoding().uncompress(true);
-		return;
-	}
-
-	public int getCode() throws HttpRequestException {
-		return request.code();
-	}
-
-	public String getMessage() throws HttpRequestException {
-		return request.message();
-	}
-
-	public String getBody() throws HttpRequestException {
-		return request.body();
 	}
 
 }
