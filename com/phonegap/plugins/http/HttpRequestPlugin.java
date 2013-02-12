@@ -19,6 +19,8 @@ public class HttpRequestPlugin extends CordovaPlugin {
 
 	private final String TAG = "HTTP";
 
+	// private HttpRequest request;
+
 	@Override
 	public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) {
 
@@ -39,8 +41,7 @@ public class HttpRequestPlugin extends CordovaPlugin {
 
 						// optional params
 						boolean trust = options.getBoolean("trustAll");
-						boolean gzip = options.getBoolean("acceptGzip");
-
+						
 
 						// iterate over the supplied params, depending on
 						// request method params are either directly attached to
@@ -68,16 +69,10 @@ public class HttpRequestPlugin extends CordovaPlugin {
 						else {
 							request = HttpRequest.get(url, inputParams, true);
 						}
-						
-						//do we want to automatically trust all ssl connections
+
 						if (trust == true) {
 							request.trustAllCerts();
 							request.trustAllHosts();
-						}
-						// Tell server to gzip response and automatically uncompress
-						if (gzip == true) {
-							
-							request.acceptGzipEncoding().uncompress(true);
 						}
 
 						int code = request.code();
@@ -91,7 +86,7 @@ public class HttpRequestPlugin extends CordovaPlugin {
 						response.put("message", msg);
 
 //						Log.d(TAG, "Response code " + url + " " + code);
-//						Log.d(TAG, "Response body " + url + " " + body);
+//					    Log.d(TAG, "Response body " + url + " " + body);
 
 						if (code == 200) {
 							callbackContext.success(response);
