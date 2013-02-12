@@ -36,12 +36,11 @@ Query facebook for posts with 'phonegap'
 
 <pre>
     var httpOptions = {
-            trustAll: true,
-            acceptGzip: false
+            trustAll: true
         };
         var params = {
             q: 'phonegap',
-            type: 'post'
+            type: 'post'// note this is a GET request post refers to the facebook wall posts
         };
 
         var apiUrl = 'https://graph.facebook.com/search?';
@@ -70,6 +69,10 @@ Query facebook for posts with 'phonegap'
 </pre>
 
 ## RELEASE NOTES ##
+
+### Feb 12, 2013 ###
+
+* Updated the core library
 
 ### Jan 4, 2013 ###
 
